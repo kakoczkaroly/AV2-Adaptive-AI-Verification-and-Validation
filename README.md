@@ -6,6 +6,10 @@ An agent can misunderstand a business signal and carry the same mistake into the
 
 ![AV² timeline: delivery and independent QA overlap; finding routes directly to the revised artifact; production signals restart the loop](av2-braided-loop.svg)
 
+## First decision: should this change be built at all?
+
+A business proposal from a human or AI is a hypothesis. Independent QA can stop it before implementation if it contradicts the business objective, conflicts with queued or active work, or violates a known requirement. Unresolved evidence or policy applicability goes to the accountable owner; it does not silently pass. See the [proposal challenge and worked counterexample](PROPOSAL-CHALLENGE.md).
+
 ## What actually loops
 
 1. **Observe and challenge.** An analyst proposes a change. Independently, QA verifies the signal and asks whether the proposed change would address the observed need.

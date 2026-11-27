@@ -7,7 +7,7 @@
 <main>
 <div class="label">AV² / v0.2 / Offline simulation</div><h1>QA does not wait for the build.</h1>
 <p>Follow a fictional quote-form change from observation through independent checks on individual code revisions. Both lanes progress during the same cycle.</p>
-<div class="controls"><label>Scenario <select id="case"><option value="retry">Detect and fix a defect</option><option value="stale">Stale evidence</option><option value="breach">Live guardrail breach</option></select></label><button id="pause">Pause</button><button id="step">Single step</button><button id="reset">Reset</button></div>
+<div class="controls"><label>Scenario <select id="case"><option value="proposal">Block a bad proposal before code</option><option value="retry" selected>Detect and fix a defect</option><option value="stale">Stale evidence</option><option value="breach">Live guardrail breach</option></select></label><button id="pause">Pause</button><button id="step">Single step</button><button id="reset">Reset</button></div>
 <div id="view" aria-live="polite"><div class="bar"><span class="label" id="time"></span> <strong id="event"></strong></div>
 <div class="cards"><section class="card build"><div class="label">Delivery lane</div><h2 id="build"></h2></section><section class="card qa"><div class="label">Independent QA lane</div><h2 id="qa"></h2></section></div>
 <div class="bar"><span class="label">Unit B · independent parallel work</span><p id="parallel"></p></div>
@@ -34,10 +34,26 @@ function evaluate(rev){
  const results=cases.map(({ids,expected})=>({actual:candidates[rev](ids),expected}));
  return {rev,results,pass:results.every(c=>c.actual===c.expected)};
 }
+const blockedProposal={sendRawEmail:true, measuresAnalyticsContacts:true};
+const approvedOutcome={metric:"unique valid requests"};
+const queuedUnit={id:"CU-42", removesRawEmail:true};
+const policy={id:"DATA-07", forbidsRawEmail:true};
+function challenge(proposal){
+ return [
+  proposal.measuresAnalyticsContacts&&approvedOutcome.metric!=="analytics contacts"&&"OUTCOME_MISMATCH",
+  proposal.sendRawEmail&&queuedUnit.removesRawEmail&&"IN_FLIGHT_CONFLICT:"+queuedUnit.id,
+  proposal.sendRawEmail&&policy.forbidsRawEmail&&"POLICY_BREACH:"+policy.id
+ ].filter(Boolean);
+}
 function initial(){return {cycle:1,i:0,revision:0,evidence:null,decision:"PENDING",cause:"initial brief",parallel:0,check:null};}
 function next(x,mode){
  if(x.i===8)return {...initial(),cycle:x.cycle+1,cause:x.cause};
+ if(x.decision==="PROPOSAL_BLOCKED")return {...initial(),cycle:x.cycle+1,cause:"revised proposal queued; no code was written"};
  const i=x.i+1,n={...x,i,parallel:i>=3?Math.min(x.parallel+1,4):0};
+ if(i===1&&mode==="proposal"){
+  n.findings=challenge(blockedProposal);
+  if(n.findings.length)n.decision="PROPOSAL_BLOCKED";
+ }
  if(i===3){n.revision=1;n.check=evaluate(1);n.decision=n.check.pass?"CHECKING":"REWORK";}
  if(i===5){n.revision=2;n.check=evaluate(2);n.evidence=mode==="stale"?evaluate(1):n.check;n.decision="CHECKING";}
  if(i===7)n.decision=n.evidence?.rev===n.revision&&n.evidence.pass?"CANARY":"HOLD";
@@ -51,13 +67,13 @@ function next(x,mode){
 </script>
 <script>
 const $=id=>document.getElementById(id);let s=initial(), paused=matchMedia('(prefers-reduced-motion: reduce)').matches,history=[];
-const reason={PENDING:'No candidate is eligible yet.',REWORK:'R1 failed an independent check; feedback returns to R1, before the build is complete.',CHECKING:'QA evidence and integration checks run alongside delivery.',CANARY:'Current evidence matches R2; the simulated mandate permits limited exposure.',HOLD:'The only published evidence is stale (R1, not R2). No exposure. Monitoring and discovery continue.',ROLLBACK:'The canary breached a guardrail. Revert and queue triage.',OBSERVE:'Monitoring queued the next cycle.'};
+const reason={PROPOSAL_BLOCKED:"Business, in-flight and policy checks failed. The delivery queue never receives this proposal.",PENDING:'No candidate is eligible yet.',REWORK:'R1 failed an independent check; feedback returns to R1, before the build is complete.',CHECKING:'QA evidence and integration checks run alongside delivery.',CANARY:'Current evidence matches R2; the simulated mandate permits limited exposure.',HOLD:'The only published evidence is stale (R1, not R2). No exposure. Monitoring and discovery continue.',ROLLBACK:'The canary breached a guardrail. Revert and queue triage.',OBSERVE:'Monitoring queued the next cycle.'};
 function render(record){
- const [name,build,qa]=beats[s.i];$('event').textContent=name;$('build').textContent=build;$('qa').textContent=qa;
+ const [name,build,qa]=beats[s.i];$('event').textContent=name;$('build').textContent=build;$('qa').textContent=s.findings?s.findings.join(' · '):qa;
  $('time').textContent='Cycle '+s.cycle+' · Event '+(s.i+1)+' / '+beats.length+' · '+s.cause;
  $('parallel').textContent=['Waiting for a non-conflicting signal.','Observation captured while Unit A is still coding.','Proposal challenged while Unit A is in rework.','Contract review starts before Unit A is integrated.','This discovery continues independently of Unit A’s release decision.'][s.parallel];
  const check=s.check?' · R'+s.check.rev+' fixture results: '+s.check.results.map(c=>c.actual+' / expected '+c.expected).join('; '):'';
- $('verdict').textContent=s.decision+' · '+reason[s.decision]+check;$('gate').dataset.blocked=['HOLD','ROLLBACK','REWORK'].includes(s.decision);
+ $('verdict').textContent=s.decision+' · '+reason[s.decision]+check;$('gate').dataset.blocked=['HOLD','ROLLBACK','REWORK','PROPOSAL_BLOCKED'].includes(s.decision);
  $('pause').textContent=paused?'Resume':'Pause';
  if(record){history.unshift('C'+s.cycle+' · '+name+' · '+s.decision);history=history.slice(0,7);}
  $('log').replaceChildren(...history.map(x=>{const li=document.createElement('li');li.textContent=x;return li;}));

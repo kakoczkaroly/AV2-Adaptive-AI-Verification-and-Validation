@@ -4,6 +4,10 @@
 
 A **Change Unit** is the smallest independently checkable, traceable change; it should be separately reversible where practical. Its versioned contract gives agents the objective and provenance, in/out-of-scope components, machine-readable invariants, examples, dependencies, acceptance/evidence requirements and rollout constraints. If two changes cannot preserve the invariant independently, bundle them or use a compatibility contract. Human-readable stories may be generated as views; they are not the execution interface. See the [example](examples/change-unit.json). IDs and hashes in that file are illustrative.
 
+## Proposal challenge before affected implementation
+
+The human or AI acting for the business proposes; independent QA checks the proposal against the Outcome Contract, the live portfolio of planned changes, and applicable versioned requirements. Verified conflicts or breaches block the affected work; uncertainty is escalated. Narrow or resequence the proposal and repeat the check. Discovery and unrelated work remain concurrent. [Decision rules and example](PROPOSAL-CHALLENGE.md).
+
 ## Artifact-level checks
 
 | Artifact or event | Verification | Validation | What happens on failure |

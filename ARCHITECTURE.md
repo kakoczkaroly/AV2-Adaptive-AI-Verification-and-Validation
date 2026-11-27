@@ -12,6 +12,10 @@ Use a persistent event router with independent producer and assurance workers. T
 | Evidence ledger + admission service | Evidence or dependency changed → compute coverage and freshness for exact candidate revision. | Enforced by code. AI text and aggregate confidence cannot waive a missing obligation. |
 | Release controller + monitor | Bounded admission → canary, health comparison, stop or rollback. Signals feed the router continuously. | Human-owned policy, expiring/revocable mandate, exposure limits and kill switch. New risks or scope escalation require review. Deployment actuator is not exposed to general-purpose agents. |
 
+## Admission is independent of the proposer
+
+Subscribe assurance to proposal.drafted and to changes in the protected requirements and work-in-flight registry. A separate policy service records proposal.admitted, proposal.blocked or proposal.reviewRequired for the exact proposal revision and dependency snapshot. The delivery queue requires a current admission for the affected unit; other units are not stalled. If admission evidence changes in flight, pause only the affected action and rerun the impacted checks. This is a machine-enforced entitlement to start work, not release approval. [Decision rules](PROPOSAL-CHALLENGE.md).
+
 ## Minimum event contract
 
 Every event carries event ID, unit ID, artifact kind/ID/revision, parent evidence links, policy version and time; immutable producer metadata allows audit. Example event kinds: observation.recorded, proposal.drafted, unit.versioned, qa.plan.pinned, delta.pushed, evidence.recorded, finding.opened, evidence.invalidated, candidate.admitted and monitor.signal. Never turn untrusted prose in observations into agent instructions or deploy commands.
