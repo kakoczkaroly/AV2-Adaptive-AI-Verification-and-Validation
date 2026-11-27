@@ -1,10 +1,12 @@
 # AV²: Adaptive AI Verification & Validation
 
-**v0.2 · Open RFC · Károly Kakocz**
+**v0.3 · Open RFC · Károly Kakocz**
 
 An agent can misunderstand a business signal and carry the same mistake into the proposal, the implementation and its tests. In AV², independent assurance examines each artifact while it is being created. It starts with the first observation, not with the first completed build.
 
-![AV² timeline: delivery and independent QA overlap; finding routes directly to the revised artifact; production signals restart the loop](av2-braided-loop.svg)
+![AV² double helix: delivery and independent QA exchange proposals, findings and regression evidence](av2-double-helix.svg)
+
+The **double helix** represents two independent but communicating loops: delivery and QA. Each cross-link is a versioned exchange: a proposal or change goes to QA; a finding or evidence goes back to the affected artifact. QA checks three separate things: **verification** (did we meet the rule?), **validation** (does this fit the need?), and **regression** (what already-correct behaviour must survive the change?). Regression is not a third strand or a final phase; its affected subset runs again on each relevant revision.
 
 ## First decision: should this change be built at all?
 
@@ -22,7 +24,7 @@ A business proposal from a human or AI is a hypothesis. Independent QA can stop 
 - [Implementation plan and detailed V&V matrix](IMPLEMENTATION-PLAN.md)
 - [Event-driven agent and QA architecture](ARCHITECTURE.md)
 - [Machine-readable worked example](examples/change-unit.json)
-- [Interactive simulation](av2-loop.html): use **Download raw file**, then open locally. It autoplays, supports pause and single-step, and shows the independent QA verdict before the developer finishes. Try **Stale evidence** to see a blocked release without blocking the next discovery cycle.
+- [Interactive simulation](av2-loop.html): use **Download raw file**, then open locally. It autoplays, supports pause and single-step, and shows the independent QA verdict before the developer finishes. Try **A fix introduces a regression** to see R2 fix the duplicate but break valid distinct requests, then R3 restore both checks. **Stale evidence** demonstrates that a blocked release does not block discovery.
 - [Original discussion](https://github.com/kakoczkaroly/AV2-Adaptive-AI-Verification-and-Validation/discussions/1): opened against v0.1; this README describes the revised proposal.
 
 This is a proposal and deterministic offline simulation, not a standard, benchmark result, live AI pipeline or permission to deploy. Background: [ISTQB CTFL: static and dynamic testing](https://istqb.org/wp-content/uploads/2024/11/ISTQB_CTFL_Syllabus_v4.0.1.pdf), [Google Cloud: early, parallel presubmit checks](https://docs.cloud.google.com/docs/cloud-approach-to-change), [NIST Generative AI Profile](https://doi.org/10.6028/NIST.AI.600-1). The proposed contribution is the combination of machine-readable change contracts, independent V&V at artifact level, and evidence invalidation and routing in a continuous adaptive loop.

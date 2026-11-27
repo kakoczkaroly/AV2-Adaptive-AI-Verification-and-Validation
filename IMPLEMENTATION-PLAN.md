@@ -1,4 +1,4 @@
-# AV² v0.2 · Implementation plan
+# AV² v0.3 · Implementation plan
 
 ## Unit of change
 
@@ -27,6 +27,12 @@ The human or AI acting for the business proposes; independent QA checks the prop
 - QA authors the fixtures before the delivery agent emits the first delta. The first delta still double-counts; the independent contract check fails while the builder is working, before any full UI flow is available.
 - A corrected delta passes static and focused dynamic checks. A test that checks only for a success toast still fails the seeded-fault challenge. A cross-component check later validates the reporting path.
 - A small bounded exposure may proceed after policy and approval checks. Meanwhile, monitor signals can open or reprioritise another unit. Batching and backpressure keep noise from triggering unbounded work.
+
+## Regression is a continuous obligation
+
+For a changed candidate, distinguish **confirmation testing** (did the reported defect disappear?) from **regression testing** (did pre-existing, unrelated correct behaviour survive the change?). For each relevant delta, rerun the defect reproducer and a dependency-selected regression set in the fast lane. Widen the set on shared interface or context changes; keep broader integration or end-to-end checks running independently. Do not release an affected candidate if required regression evidence is missing, stale or red. Record cases selected and skipped, reasons, artifact SHA and test-set version. Where the impact cannot be bounded, widen coverage or hold.
+
+Example: R1 counts A,A as 2 (fail). R2 returns 1 for all non-empty requests: it passes the duplicate retest, but A,B incorrectly returns 1 (regression). R3 counts unique valid request IDs: A,A → 1 and A,B → 2. The demo executes both checks independently on each revision.
 
 ## Prove that this adds value
 
