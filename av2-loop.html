@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AV² | Delivery and assurance loop</title>
+<style>
+:root{font:16px system-ui,sans-serif;color:#14253a;background:#f6f8fb;--teal:#087b72}*{box-sizing:border-box}body{margin:0}main{max-width:1080px;margin:auto;padding:clamp(18px,5vw,55px)}header{border-bottom:1px solid #c9d4df;padding-bottom:20px}.eyebrow{font-size:.78rem;font-weight:740;letter-spacing:.12em;color:#416078;text-transform:uppercase}h1{margin:.35rem 0;font-size:clamp(2rem,5vw,3.4rem);line-height:1.05}p{line-height:1.5;margin:.6rem 0}.controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:20px 0}button,select{font:inherit;color:inherit;background:white;border:1px solid #889bad;border-radius:7px;padding:.45rem .7rem}button{cursor:pointer}ol{list-style:none;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}li{background:white;border:1px solid #c5d1db;border-radius:8px;padding:.7rem;min-height:72px;display:flex;flex-direction:column;justify-content:center}li small{color:#4a6074}li.active{background:#e3f4f1;border:2px solid var(--teal);box-shadow:0 0 0 2px #b8e5de}section{background:#fff;border:1px solid #c5d1db;border-radius:8px;padding:16px;margin-top:12px}.next{border-left:4px solid var(--teal)}#copy{min-height:3em}h2{margin:0;font-size:1.15rem}.log{max-height:150px;overflow:auto;list-style:none;margin:7px 0 0;padding:0;display:block}.log li{font: .88rem ui-monospace,monospace;border:0;border-radius:0;min-height:0;padding:.23rem 0;display:block}.tag{color:#087268;font-weight:720}@media(max-width:650px){ol{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+<main><header><div class="eyebrow">AV² v0.1 · deterministic simulation</div><h1>From delivery to the next cycle</h1><p>See what each role does and what restarts the loop. The demonstration uses simulated approval and telemetry; it does not deploy anything.</p></header>
+<div class="controls"><label>Scenario <select id="scenario"><option value="nominal">Healthy rollout</option><option value="missing">Missing test evidence</option><option value="invalid">Invalid mandate</option><option value="breach">Canary guardrail breach</option></select></label><button id="pause" type="button">Pause</button><button id="step" type="button">Single step</button><button id="reset" type="button">Reset</button></div>
+<ol id="rail" aria-label="Lifecycle stages"></ol>
+<section class="next" aria-live="polite"><div class="eyebrow" id="cycle"></div><h2 id="phase"></h2><p id="copy"></p></section>
+<section><h2>Recent events</h2><ul id="log" class="log"></ul></section>
+<p><small>Blocked scenarios remain blocked until reset or scenario change. A monitoring event starts intake, not production. Each illustrated release requires its own simulated mandate.</small></p>
+</main>
+<script id="model">
+const phases=[
+['INTAKE','Orchestrator','Read the incoming event; open a cycle and link its source.'],
+['SPEC','Product + spec','Record the business rule, expected outcome and allowed risk.'],
+['BUILD','Delivery agent','Build a candidate and record its artifact revision. No deployment access.'],
+['ASSURE','Independent QA','Run the reference and seeded fault independently; record evidence for this exact candidate.'],
+['APPROVAL','Human owner','Simulated approval binds the revision, exposure limit and rollback criteria.'],
+['CANARY','Release controller','Run a bounded rollout under the simulated mandate.'],
+['MONITOR','Monitor','Measure health and emit a review event for the next cycle.'],
+['RESTART','Orchestrator','Consume the monitor event and queue a new intake. No release authority is inherited.']
+];
+const stops={HOLD:['HOLD','Evidence gate','Required test evidence is missing. Stop before any exposure.'],REVIEW:['REVIEW','Release owner','The mandate no longer covers the candidate. A new review is required.'],ROLLBACK:['ROLLBACK','Release controller','A guardrail breached. Roll back and emit a new triage event.']};
+function initial(){return {i:0,cycle:1,status:null,cause:'initial brief'};}
+function advance(s,mode){
+ if(s.status==='HOLD'||s.status==='REVIEW')return s;
+ if(s.status==='ROLLBACK')return {i:7,cycle:s.cycle,status:null,cause:'guardrail breach'};
+ if(s.i===3&&mode==='missing')return {...s,status:'HOLD'};
+ if(s.i===4&&mode==='invalid')return {...s,status:'REVIEW'};
+ if(s.i===5&&mode==='breach')return {...s,status:'ROLLBACK'};
+ if(s.i===6)return {...s,i:7,cause:'scheduled monitor review'};
+ if(s.i===7)return {i:0,cycle:s.cycle+1,status:null,cause:s.cause};
+ return {...s,i:s.i+1};
+}
+</script>
+<script>
+const $=id=>document.getElementById(id);
+let s=initial(),paused=matchMedia('(prefers-reduced-motion: reduce)').matches,entries=[];
+function record(){entries.unshift('C'+s.cycle+' / '+(s.status||phases[s.i][0])+(s.i===0||s.i===7?'  ←  '+s.cause:''));entries=entries.slice(0,10);}
+function render(){
+ const current=s.status?stops[s.status]:phases[s.i];$('cycle').textContent='Cycle '+s.cycle+' · '+current[1];$('phase').textContent=current[0];$('copy').textContent=current[2];
+ $('pause').textContent=paused?'Resume':'Pause';$('pause').setAttribute('aria-pressed',String(paused));
+ $('rail').replaceChildren(...phases.map(([name,role],i)=>{const el=document.createElement('li');el.append(name);const sm=document.createElement('small');sm.textContent=role;el.append(sm);if(i===s.i){el.className='active';el.setAttribute('aria-current','step');}return el;}));
+ $('log').replaceChildren(...entries.map(x=>{const li=document.createElement('li');li.textContent=x;return li;}));
+}
+function tick(){const n=advance(s,$('scenario').value);if(n!==s){s=n;record();render();}}
+function reset(){s=initial();entries=[];record();render();}
+$('pause').onclick=()=>{paused=!paused;render();};$('step').onclick=()=>{paused=true;tick();render();};$('reset').onclick=reset;$('scenario').onchange=reset;
+reset();setInterval(()=>{if(!paused)tick();},1150);
+</script></html>
