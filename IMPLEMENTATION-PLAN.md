@@ -1,26 +1,32 @@
-# AV² v0.1 · Implementation plan
+# AV² v0.2 · Implementation plan
 
-## Problem
-When one AI workflow translates an unverified assumption into a requirement, code and tests, a green build can confirm that assumption instead of challenging it. AV² keeps delivery and assurance separate, joins them at an evidence gate, and feeds production observations into the next cycle.
+## Unit of change
 
-**Reference case:** a fictional mobile quote form. Retrying a successful submission must not create a second valid lead. The product hypothesis is more unique qualified leads per eligible visitor, not more submit-click events. No customer data or real deployment is required for the pilot.
+A **Change Unit** is the smallest independently checkable, traceable change; it should be separately reversible where practical. Its versioned contract gives agents the objective and provenance, in/out-of-scope components, machine-readable invariants, examples, dependencies, acceptance/evidence requirements and rollout constraints. If two changes cannot preserve the invariant independently, bundle them or use a compatibility contract. Human-readable stories may be generated as views; they are not the execution interface. See the [example](examples/change-unit.json). IDs and hashes in that file are illustrative.
 
-## Delivery and assurance, side by side
+## Artifact-level checks
 
-| Stage | Delivery | Independent assurance | Exit evidence |
+| Artifact or event | Verification | Validation | What happens on failure |
 |---|---|---|---|
-| 1. Intent | Summarise benchmark and propose one small change. | Challenge the benchmark, baseline and target audience; identify what could falsify the hypothesis. | Versioned Outcome Contract: baseline, metric definition, guardrails and accountable owner. |
-| 2. Spec and context | Write stories, acceptance criteria, interface changes and scope. | Verify traceability and provenance; explore missing or conflicting context; define reference and deliberately faulty fixtures independently. | Versioned spec, approved fixture baseline, explicit unknowns and affected-path list. |
-| 3. Build and integrate | Implement on a short-lived branch and produce a preview. | Run unit, contract, integration and browser tests; verify that the reference passes and the faulty version fails for the expected reason. Use repeated, calibrated evals only for generative behaviour. | Revision-bound evidence; no missing mandatory check or hidden skipped test. |
-| 4. Release | Prepare telemetry, exposure limits and rollback. | Reconcile evidence with the contract; dry-run rollback and check measurement. | A named owner records the Human Release Mandate before the first real-user exposure. |
-| 5. Limited rollout | Release a bounded cohort under the mandate. | Compare health against control; hold or roll back on bad or missing signals. Do not equate canary health with causal business benefit. | Deployment decision, metrics and reason codes. |
-| 6. Monitor and restart | Continue normal observation after rollout. | Emit a deduplicated event for a breach or a scheduled review. Convert it into the next goal/question, with the signal attached. | New independently identified cycle, linked to the observed event and prior mandate. |
+| Observation | Check event identity, source, time window, cohort and deduplication. | Check that the signal reflects an actual problem, not tracking drift or a misleading comparison. | Reject signal or request more data; no change proposed as fact. |
+| Proposal | Check provenance, assumptions, constraints and alternatives. | Test the proposed mechanism on counterexamples and representative scenarios; record what would disprove it. | Return to the hypothesis with a concrete counterexample. |
+| Unit contract | Statically check schema, links, dependency graph, scope, testability and conflicting rules. | Check that exact examples capture user need, including negative cases. | Revise the contract; affected downstream evidence becomes stale. |
+| QA plan and fixture | Trace each critical invariant to independent expectations. Check corpus version, determinism and ownership. | Known-good slice passes and deliberately faulty fixture fails for the intended reason; a weak assertion must not pass review. | Fix the test or escalate the oracle; never relabel missing evidence as not applicable. |
+| Working delta | Scope-aware line/diff checks for precise static rules; symbol/module checks for semantics and interfaces. Run focused contract/property checks when the slice is executable. | Validate the relevant scenario against the smallest meaningful executable slice. Whole-journey claims wait until integration; unknown is not a pass. | Report against the exact revision and replay impacted checks on next delta. |
+| Integrated candidate | Reconcile hashes for artifact, contract, checker and fixtures; test cross-unit interactions. | Check system journeys, nonfunctional thresholds and likely user impact, at the appropriate granularity. | Hold only affected units or dependency closures; unrelated work proceeds. |
+| Limited exposure and production | Verify mandate, health, telemetry and event integrity. | Compare the right outcome to a control where feasible; differentiate safety from effectiveness. | Roll back on guardrail breach; send signal to discovery, not directly to deploy. |
 
-## Pilot milestones
+## Pilot timeline: one minute-scale feedback example
 
-1. **Offline:** simulate duplicate conversion, missing evidence, expired mandate and an unhealthy rollout. Compare normal browser-style success with independent evidence. Confirm the seeded defect cannot pass the gate.
-2. **Staging:** add deterministic fixtures, separate CI jobs and a revision-bound evidence file. Test the same business rule at API and UI boundaries; verify synthetic telemetry and the reversible kill switch.
-3. **Bounded production trial, after explicit approval:** one reversible change and one named owner. Decide exposure, runtime window, minimum sample and guardrails before launch. Record a clear outcome: promote, retain control, roll back or collect more data.
-4. **Replication:** ask a second team to run the example. Compare false greens caught, false blocks, evidence completeness and time to decision against its normal workflow. Revise the RFC from the counterexamples rather than claiming results in advance.
+**Fictional quote form.** A telemetry discrepancy suggests retries are counted as new conversions. QA checks event provenance while the analyst writes a proposal. QA then pins its own acceptance rule: a valid submission followed by the same request ID counts once; two distinct valid IDs count twice. A separate unit for dashboard copy can proceed, but a dashboard metric change depends on the invariant if it reads this event stream.
 
-**Boundary:** automation restarts triage, evidence collection and planning. It does not confer production authority on newly generated code. A different artifact or a changed risk profile gets reviewed again unless a separately approved policy explicitly covers that case. High-risk changes are outside the pilot.
+- QA authors the fixtures before the delivery agent emits the first delta. The first delta still double-counts; the independent contract check fails while the builder is working, before any full UI flow is available.
+- A corrected delta passes static and focused dynamic checks. A test that checks only for a success toast still fails the seeded-fault challenge. A cross-component check later validates the reporting path.
+- A small bounded exposure may proceed after policy and approval checks. Meanwhile, monitor signals can open or reprioritise another unit. Batching and backpressure keep noise from triggering unbounded work.
+
+## Prove that this adds value
+
+1. Run offline scenarios for malformed contract, wrong invariant, weakened tests, stale evidence, conflicting units and rollback. Compare to a baseline that runs CI only after integration.
+2. In staging, instrument detection latency (delta to useful finding), false blocks, missed seeded defects, independent critical evidence coverage and checks per delta. Verify dependency invalidation and reproducible rerun.
+3. Compare observed latency and failure detection before choosing a cadence. Small static or focused checks can run on each meaningful delta; UI/system or qualitative checks can run asynchronously. High speed is a target and has not yet been measured.
+4. Start any production pilot only under explicit bounded release authority, with control and stop conditions. Use genuine user outcomes and record uncertainty; no automatic rewriting of the approval or QA policy.

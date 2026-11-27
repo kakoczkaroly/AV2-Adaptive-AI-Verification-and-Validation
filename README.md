@@ -1,34 +1,24 @@
 # AV²: Adaptive AI Verification & Validation
 
-**v0.1 · Open RFC · Károly Kakocz**
+**v0.2 · Open RFC · Károly Kakocz**
 
-AV² is a proposed quality model for AI-assisted software delivery. A green build is weak evidence when the same mistaken assumption shapes the requirement, code and test. AV² asks teams to preserve an independent source of expected behaviour and make release decisions on traceable evidence.
+An agent can misunderstand a business signal and carry the same mistake into the proposal, the implementation and its tests. In AV², independent assurance examines each artifact while it is being created. It starts with the first observation, not with the first completed build.
 
-| Checkpoint | Verification | Validation |
-| --- | --- | --- |
-| Intent | Trace the baseline and benchmark to sources. | Check that the problem matters to the intended users. |
-| Specification | Make the acceptance rules and boundaries testable. | Walk through representative user scenarios. |
-| Context, when AI is involved | Version the relevant sources, prompts, model and skills. | Test behaviour with incomplete or conflicting inputs. |
-| Build | Run conventional component, integration and system checks. | Check the user journey and whether tests catch a seeded failure. |
-| Release | Tie evidence and rollback readiness to the exact revision. | Decide whether the evidence supports limited exposure. |
-| Live | Verify telemetry and stop conditions. | Compare outcomes with a control where feasible. |
+![AV² timeline: delivery and independent QA overlap; finding routes directly to the revised artifact; production signals restart the loop](av2-braided-loop.svg)
 
-**Outcome Contract:** define the business objective, measurement and guardrails before implementation. **Evidence Gate:** keep the acceptance rule and tests that serve as independent evidence outside the implementation agent’s control. **Human Release Mandate:** for a bounded low-risk pilot, a named owner approves scope and limits before first user exposure. Changes to scope or risk require renewed review; missing required evidence blocks rollout.
+## What actually loops
 
-Keep conventional tests. Add AI-specific evaluations where a generative component or decision actually needs them. Limited rollout is a safety check, not proof of business uplift. This is a working proposal, not a formal standard or a claim of production results.
+1. **Observe and challenge.** An analyst proposes a change. Independently, QA verifies the signal and asks whether the proposed change would address the observed need.
+2. **Partition and contract.** The planner emits versioned, machine-readable **Change Units**, not just prose tickets. QA reviews the boundaries and writes the independent acceptance examples before the first relevant code delta is available. Drafts can evolve, but the builder cannot quietly weaken approved expectations.
+3. **Build and check concurrently.** A code delta triggers selected checks immediately. QA both verifies the delta against its contract and validates representative behaviour on the smallest useful executable slice. Feedback routes to the exact proposal, contract, context, code or test revision it challenges. Other unaffected units can continue.
+4. **Admit evidence, not motion.** A candidate is eligible only when the current implementation and independently generated evidence agree. A valid release mandate still controls real exposure. Production observations queue new Change Units while existing ones are in progress; they do not grant new deployment authority.
 
-[Join the first discussion: what evidence should block an AI-assisted release?](../../discussions/1)
+**Verification** checks the artifact against requirements, contracts or rules. **Validation** checks fitness for the intended use. Before code, that means validating the *hypothesis or specification* against examples and observed needs, not claiming the product already works. After deployment, actual outcome validation needs appropriate data, often a control group and a longer observation window.
 
-Background: [ISTQB CTFL](https://istqb.org/wp-content/uploads/2024/11/ISTQB_CTFL_Syllabus_v4.0.1.pdf) · [NIST Generative AI Profile](https://doi.org/10.6028/NIST.AI.600-1) · [Google SRE: Canarying Releases](https://sre.google/workbook/canarying-releases/).
+- [Implementation plan and detailed V&V matrix](IMPLEMENTATION-PLAN.md)
+- [Event-driven agent and QA architecture](ARCHITECTURE.md)
+- [Machine-readable worked example](examples/change-unit.json)
+- [Interactive simulation](av2-loop.html): use **Download raw file**, then open locally. It autoplays, supports pause and single-step, and shows the independent QA verdict before the developer finishes. Try **Stale evidence** to see a blocked release without blocking the next discovery cycle.
+- [Original discussion](https://github.com/kakoczkaroly/AV2-Adaptive-AI-Verification-and-Validation/discussions/1): opened against v0.1; this README describes the revised proposal.
 
-## Implementation and architecture
-
-- [Implementation plan](IMPLEMENTATION-PLAN.md): problem, six lifecycle checkpoints, deliverables and pilot milestones.
-- [Agent architecture](ARCHITECTURE.md): roles, independence, QA checks and release authority.
-- [Static workflow diagram](AV2-v0.1-delivery-and-assurance.png).
-
-## Watch the loop
-
-![Animated AV² loop: intake, spec, build, independent assurance, human mandate, canary, monitor, and new intake](av2-loop.gif)
-
-For pause, single stepping and failure scenarios, [download the interactive HTML demo](av2-loop.html) using GitHub’s Download raw file button and open it locally. The monitoring event triggers the next simulated intake automatically. It never grants approval to release a new artifact.
+This is a proposal and deterministic offline simulation, not a standard, benchmark result, live AI pipeline or permission to deploy. Background: [ISTQB CTFL: static and dynamic testing](https://istqb.org/wp-content/uploads/2024/11/ISTQB_CTFL_Syllabus_v4.0.1.pdf), [Google Cloud: early, parallel presubmit checks](https://docs.cloud.google.com/docs/cloud-approach-to-change), [NIST Generative AI Profile](https://doi.org/10.6028/NIST.AI.600-1). The proposed contribution is the combination of machine-readable change contracts, independent V&V at artifact level, and evidence invalidation and routing in a continuous adaptive loop.

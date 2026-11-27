@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "0.2",
+  "unitId": "quote-041",
+  "revision": 2,
+  "origin": { "proposalId": "proposal-17", "signals": ["synthetic-observation-08"] },
+  "hypothesis": "Deduplicating recognised retries makes the qualified-lead metric count actual requests.",
+  "scope": { "in": ["quote submission", "qualified-lead event"], "out": ["pricing", "personal data schema"] },
+  "invariants": [
+    { "id": "I-1", "assert": { "metric": "qualifiedLeadCount", "deltaForRetriedSameId": 1, "deltaForTwoDistinctValidIds": 2 } }
+  ],
+  "dependsOn": [{ "unitId": "event-contract-012", "requiredRevision": 1 }],
+  "evidenceRequired": {
+    "policyVersion": "pilot-2",
+    "independent": ["static-contract", "reference-case", "seeded-duplicate-rejected", "integration-check"],
+    "bindTo": ["unitRevision", "candidateRevision", "fixtureRevision", "checkerRevision", "policyVersion"]
+  },
+  "releaseConstraints": { "mode": "staging-only-until-mandated", "rollback": "disable candidate flag", "realUserExposure": false }
+}

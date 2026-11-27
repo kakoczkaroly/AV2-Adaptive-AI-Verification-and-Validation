@@ -1,52 +1,60 @@
 <!doctype html>
 <html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AV² | Delivery and assurance loop</title>
+<title>AV² v0.2 · Concurrent assurance simulation</title>
 <style>
-:root{font:16px system-ui,sans-serif;color:#14253a;background:#f6f8fb;--teal:#087b72}*{box-sizing:border-box}body{margin:0}main{max-width:1080px;margin:auto;padding:clamp(18px,5vw,55px)}header{border-bottom:1px solid #c9d4df;padding-bottom:20px}.eyebrow{font-size:.78rem;font-weight:740;letter-spacing:.12em;color:#416078;text-transform:uppercase}h1{margin:.35rem 0;font-size:clamp(2rem,5vw,3.4rem);line-height:1.05}p{line-height:1.5;margin:.6rem 0}.controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:20px 0}button,select{font:inherit;color:inherit;background:white;border:1px solid #889bad;border-radius:7px;padding:.45rem .7rem}button{cursor:pointer}ol{list-style:none;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}li{background:white;border:1px solid #c5d1db;border-radius:8px;padding:.7rem;min-height:72px;display:flex;flex-direction:column;justify-content:center}li small{color:#4a6074}li.active{background:#e3f4f1;border:2px solid var(--teal);box-shadow:0 0 0 2px #b8e5de}section{background:#fff;border:1px solid #c5d1db;border-radius:8px;padding:16px;margin-top:12px}.next{border-left:4px solid var(--teal)}#copy{min-height:3em}h2{margin:0;font-size:1.15rem}.log{max-height:150px;overflow:auto;list-style:none;margin:7px 0 0;padding:0;display:block}.log li{font: .88rem ui-monospace,monospace;border:0;border-radius:0;min-height:0;padding:.23rem 0;display:block}.tag{color:#087268;font-weight:720}@media(max-width:650px){ol{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+:root{font:16px system-ui;color:#15253b;background:#f3f6f8}*{box-sizing:border-box}body{margin:0}main{max-width:980px;margin:auto;padding:clamp(16px,5vw,55px)}p{line-height:1.55}h1{line-height:1.08;font-size:clamp(2rem,5vw,3.1rem);margin:.4rem 0}small,.label{color:#445b70}.label{font-size:.8rem;font-weight:750;letter-spacing:.1em;text-transform:uppercase}.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.card,.bar{background:#fff;border:1px solid #b9cbd7;border-radius:10px;padding:15px}.card.qa{border-left:5px solid #08776d}.card.build{border-left:5px solid #40668e}.bar{margin-top:10px}h2{margin:.35em 0;font-size:1.12rem}.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:20px 0}button,select{font:inherit;padding:.45rem .65rem;border:1px solid #73889c;border-radius:7px;background:#fff;color:inherit}button{cursor:pointer}#log{margin:6px 0 0;padding-left:1.3em;line-height:1.55}#qa,#build{min-height:2em}#gate[data-blocked=true]{background:#fff4e7}@media(max-width:550px){.cards{grid-template-columns:1fr}}
 </style>
-<main><header><div class="eyebrow">AV² v0.1 · deterministic simulation</div><h1>From delivery to the next cycle</h1><p>See what each role does and what restarts the loop. The demonstration uses simulated approval and telemetry; it does not deploy anything.</p></header>
-<div class="controls"><label>Scenario <select id="scenario"><option value="nominal">Healthy rollout</option><option value="missing">Missing test evidence</option><option value="invalid">Invalid mandate</option><option value="breach">Canary guardrail breach</option></select></label><button id="pause" type="button">Pause</button><button id="step" type="button">Single step</button><button id="reset" type="button">Reset</button></div>
-<ol id="rail" aria-label="Lifecycle stages"></ol>
-<section class="next" aria-live="polite"><div class="eyebrow" id="cycle"></div><h2 id="phase"></h2><p id="copy"></p></section>
-<section><h2>Recent events</h2><ul id="log" class="log"></ul></section>
-<p><small>Blocked scenarios remain blocked until reset or scenario change. A monitoring event starts intake, not production. Each illustrated release requires its own simulated mandate.</small></p>
+<main>
+<div class="label">AV² / v0.2 / Offline simulation</div><h1>QA does not wait for the build.</h1>
+<p>Follow a fictional quote-form change from observation through independent checks on individual code revisions. Both lanes progress during the same cycle.</p>
+<div class="controls"><label>Scenario <select id="case"><option value="retry">Detect and fix a defect</option><option value="stale">Stale evidence</option><option value="breach">Live guardrail breach</option></select></label><button id="pause">Pause</button><button id="step">Single step</button><button id="reset">Reset</button></div>
+<div id="view" aria-live="polite"><div class="bar"><span class="label" id="time"></span> <strong id="event"></strong></div>
+<div class="cards"><section class="card build"><div class="label">Delivery lane</div><h2 id="build"></h2></section><section class="card qa"><div class="label">Independent QA lane</div><h2 id="qa"></h2></section></div>
+<div class="bar" id="gate"><span class="label">Evidence &amp; release</span><p id="verdict"></p></div></div>
+<section class="bar"><span class="label">Event log · newest first</span><ul id="log"></ul></section>
+<p><small>Release approval and telemetry are simulated. A new discovery cycle never inherits permission to expose a new candidate.</small></p>
 </main>
 <script id="model">
-const phases=[
-['INTAKE','Orchestrator','Read the incoming event; open a cycle and link its source.'],
-['SPEC','Product + spec','Record the business rule, expected outcome and allowed risk.'],
-['BUILD','Delivery agent','Build a candidate and record its artifact revision. No deployment access.'],
-['ASSURE','Independent QA','Run the reference and seeded fault independently; record evidence for this exact candidate.'],
-['APPROVAL','Human owner','Simulated approval binds the revision, exposure limit and rollback criteria.'],
-['CANARY','Release controller','Run a bounded rollout under the simulated mandate.'],
-['MONITOR','Monitor','Measure health and emit a review event for the next cycle.'],
-['RESTART','Orchestrator','Consume the monitor event and queue a new intake. No release authority is inherited.']
+const beats=[
+ ["Observation recorded","Check a metric discrepancy; draft competing explanations.","Verify event source and time; ask whether duplicate tracking can explain it."],
+ ["Proposal drafted","Propose idempotent handling of retries.","Challenge the hypothesis against retry / true second request scenarios."],
+ ["Change Unit versioned","Start implementing independently scoped work from the versioned contract.","Check contract scope and pin the reference and seeded-defect fixtures before R1."],
+ ["Delta R1 pushed","Continue coding and composing the next module delta.","Verify executable slice against the fixed contract. R1 counts the same request twice: FAIL."],
+ ["Finding routed to R1","Amend the exact counter update; unrelated work continues.","Validate intended behaviour: one retry counts once, two valid IDs count twice."],
+ ["Delta R2 pushed","Publish the corrected component; continue integration.","Verify the R2 diff, replay the affected tests and confirm the seeded defect is caught."],
+ ["Candidate evidence reconciled","Assemble the candidate; another proposed unit can enter planning.","Verify artifact and evidence revisions; validate cross-component reporting."],
+ ["Bounded gate decision","Prepare only policy-permitted exposure; discovery remains active.","Check revision-bound evidence and the simulated release mandate."],
+ ["Monitor emits event","Collect the next observation while existing work continues.","Check telemetry health; classify the next signal. No release authority transfers."]
 ];
-const stops={HOLD:['HOLD','Evidence gate','Required test evidence is missing. Stop before any exposure.'],REVIEW:['REVIEW','Release owner','The mandate no longer covers the candidate. A new review is required.'],ROLLBACK:['ROLLBACK','Release controller','A guardrail breached. Roll back and emit a new triage event.']};
-function initial(){return {i:0,cycle:1,status:null,cause:'initial brief'};}
-function advance(s,mode){
- if(s.status==='HOLD'||s.status==='REVIEW')return s;
- if(s.status==='ROLLBACK')return {i:7,cycle:s.cycle,status:null,cause:'guardrail breach'};
- if(s.i===3&&mode==='missing')return {...s,status:'HOLD'};
- if(s.i===4&&mode==='invalid')return {...s,status:'REVIEW'};
- if(s.i===5&&mode==='breach')return {...s,status:'ROLLBACK'};
- if(s.i===6)return {...s,i:7,cause:'scheduled monitor review'};
- if(s.i===7)return {i:0,cycle:s.cycle+1,status:null,cause:s.cause};
- return {...s,i:s.i+1};
+function initial(){return {cycle:1,i:0,revision:0,evidence:null,decision:"PENDING",cause:"initial brief"};}
+function next(x,mode){
+ if(x.i===8)return {...initial(),cycle:x.cycle+1,cause:x.cause};
+ const i=x.i+1,n={...x,i};
+ if(i===3){n.revision=1;n.decision="REWORK";}
+ if(i===5){n.revision=2;n.evidence=mode==="stale"?1:2;n.decision="CHECKING";}
+ if(i===7)n.decision=n.evidence===n.revision?"CANARY":"HOLD";
+ if(i===8){
+   if(n.decision==="CANARY"&&mode==="breach"){n.decision="ROLLBACK";n.cause="canary guardrail breach";}
+   else if(n.decision==="HOLD")n.cause="new discovery signal; prior rollout held";
+   else {n.cause="scheduled monitor observation";n.decision="OBSERVE";}
+ }
+ return n;
 }
 </script>
 <script>
-const $=id=>document.getElementById(id);
-let s=initial(),paused=matchMedia('(prefers-reduced-motion: reduce)').matches,entries=[];
-function record(){entries.unshift('C'+s.cycle+' / '+(s.status||phases[s.i][0])+(s.i===0||s.i===7?'  ←  '+s.cause:''));entries=entries.slice(0,10);}
-function render(){
- const current=s.status?stops[s.status]:phases[s.i];$('cycle').textContent='Cycle '+s.cycle+' · '+current[1];$('phase').textContent=current[0];$('copy').textContent=current[2];
- $('pause').textContent=paused?'Resume':'Pause';$('pause').setAttribute('aria-pressed',String(paused));
- $('rail').replaceChildren(...phases.map(([name,role],i)=>{const el=document.createElement('li');el.append(name);const sm=document.createElement('small');sm.textContent=role;el.append(sm);if(i===s.i){el.className='active';el.setAttribute('aria-current','step');}return el;}));
- $('log').replaceChildren(...entries.map(x=>{const li=document.createElement('li');li.textContent=x;return li;}));
+const $=id=>document.getElementById(id);let s=initial(), paused=matchMedia('(prefers-reduced-motion: reduce)').matches,history=[];
+const reason={PENDING:'No candidate is eligible yet.',REWORK:'R1 failed an independent check; feedback returns to R1, before the build is complete.',CHECKING:'QA evidence and integration checks run alongside delivery.',CANARY:'Current evidence matches R2; the simulated mandate permits limited exposure.',HOLD:'Evidence is for R1, not R2. No exposure. Monitoring and discovery continue.',ROLLBACK:'The canary breached a guardrail. Revert and queue triage.',OBSERVE:'Monitoring queued the next cycle.'};
+function render(record){
+ const [name,build,qa]=beats[s.i];$('event').textContent=name;$('build').textContent=build;$('qa').textContent=qa;
+ $('time').textContent='Cycle '+s.cycle+' · Event '+(s.i+1)+' / '+beats.length+' · '+s.cause;
+ $('verdict').textContent=s.decision+' · '+reason[s.decision];$('gate').dataset.blocked=['HOLD','ROLLBACK','REWORK'].includes(s.decision);
+ $('pause').textContent=paused?'Resume':'Pause';
+ if(record){history.unshift('C'+s.cycle+' · '+name+' · '+s.decision);history=history.slice(0,7);}
+ $('log').replaceChildren(...history.map(x=>{const li=document.createElement('li');li.textContent=x;return li;}));
 }
-function tick(){const n=advance(s,$('scenario').value);if(n!==s){s=n;record();render();}}
-function reset(){s=initial();entries=[];record();render();}
-$('pause').onclick=()=>{paused=!paused;render();};$('step').onclick=()=>{paused=true;tick();render();};$('reset').onclick=reset;$('scenario').onchange=reset;
-reset();setInterval(()=>{if(!paused)tick();},1150);
-</script></html>
+function tick(){s=next(s,$('case').value);render(true);}
+function reset(){s=initial();history=[];render(true);}
+$('pause').onclick=()=>{paused=!paused;render(false)};$('step').onclick=()=>{paused=true;tick()};$('reset').onclick=reset;$('case').onchange=reset;
+reset();setInterval(()=>{if(!paused)tick();},1500);
+</script>
+</html>
