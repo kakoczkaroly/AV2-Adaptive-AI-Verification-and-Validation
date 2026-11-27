@@ -1,4 +1,4 @@
-# AV² v0.3 · Concurrent agents and assurance
+# AV² v0.4 · Concurrent agents and assurance
 
 Use a persistent event router with independent producer and assurance workers. There is no global BUILD → QA transition. A unit is a graph of artifacts and obligations, not a single status that makes QA wait for a handoff.
 
@@ -11,6 +11,10 @@ Use a persistent event router with independent producer and assurance workers. T
 | Independent QA: delta evaluator | New delta, context change or invalidation → selects affected rules and fixtures, runs exact checks, returns evidence or an actionable counterexample. | Read-only candidate; no production access. Deterministic checks first; probabilistic checks use fixed rubrics, repeated trials and human anchors if needed. |
 | Evidence ledger + admission service | Evidence or dependency changed → compute coverage and freshness for exact candidate revision. | Enforced by code. AI text and aggregate confidence cannot waive a missing obligation. |
 | Release controller + monitor | Bounded admission → canary, health comparison, stop or rollback. Signals feed the router continuously. | Human-owned policy, expiring/revocable mandate, exposure limits and kill switch. New risks or scope escalation require review. Deployment actuator is not exposed to general-purpose agents. |
+
+## Release cadence and overlap
+
+Assign each release round its own ID, baseline release ID, accepted unit revisions, candidate, mandate and telemetry correlation keys. Fan out the initiating event to delivery and assurance together, without waiting for one to finish. The release rendezvous is one admission transaction that binds the exact candidate and the independent evidence to an authorised scope; the two streams do not have to finish their individual checks at the same wall-clock instant. Update the released baseline only after an actual exposure event, and re-check in-flight work affected by that baseline change. In-flight events are scoped by those identities, not a global stage. An exposed round keeps a monitoring window while subsequent rounds perform QA or release. Keep correlation, cohort attribution and rollback independence; serialize only where shared boundaries or safety policies require it. Freshness and regression holds stop exposure for the affected candidate without stopping unrelated discovery.
 
 ## Admission is independent of the proposer
 

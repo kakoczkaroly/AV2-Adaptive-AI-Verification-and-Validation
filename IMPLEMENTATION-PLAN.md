@@ -1,4 +1,8 @@
-# AV² v0.3 · Implementation plan
+# AV² v0.4 · Implementation plan
+
+## One turn is one release round
+
+A turn is the unit of cadence, not one stage on a project timeline. Candidate A can be live and monitored while candidate B is being challenged and C is undergoing its regression checks. Both strands start together for that turn: delivery assesses and builds from the last released baseline; independent QA challenges the same evidence and prepares its own checks. The five exchanges repeat for each turn, and a single link can fire repeatedly during rework. At one marked rendezvous, the candidate and fresh independent evidence must refer to the same revision and applicable contract, fixtures and policy. Only then can a valid mandate permit exposure. Actual promotion updates the baseline for later work; in-flight work rebases or invalidates evidence when its assumptions are affected. The six-turn overview illustrates six successful, distinct rounds. A blocked attempt does not count as a deployment. Monitor and discovery are continuously active, not final phases.
 
 ## Unit of change
 

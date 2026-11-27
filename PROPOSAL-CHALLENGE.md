@@ -1,6 +1,6 @@
 # AV² · Independent proposal challenge
 
-**The proposer does not get to admit its own proposal.** This applies whether the business proposer is a person or an agent. Independent QA challenges the proposal before any affected implementation work begins, then continues reassessment while delivery runs. The unit is the scope of a decision; this is not a meeting or a global phase gate.
+**The proposer does not get to admit its own proposal.** This applies whether the business proposer is a person or an agent. Independent QA and delivery assessment start together from the latest released baseline. QA challenges the proposal before any affected implementation starts, then continues through each round and its release rendezvous. The unit is the scope of a decision; this is not a meeting or a global phase gate.
 
 | Question | Independent check | Evidence or disposition |
 |---|---|---|

@@ -1,0 +1,16 @@
+# AV² v0.4 · Related work
+
+**Search boundary:** A targeted first-pass review dated 2026-11-27. This is not an exhaustive review, an originality guarantee, a prior-art legal opinion, or a standards claim.
+
+| Primary source | Existing overlap | AV²'s proposed emphasis |
+|---|---|---|
+| [DocumentDrivenDX HELIX: workflow](https://documentdrivendx.github.io/helix/use/workflow/) and [principles](https://documentdrivendx.github.io/helix/why/principles/) | The closest match found. It already describes concurrent planning and execution helices for AI-assisted work, an artifact graph, independent fresh-eyes review and a verification gate. | AV² defines its two strands as delivery and independent assurance, starts both at the same signal, and explicitly maps one turn to a release round. It specifies pre-code challenge of queued conflicts and policy, revision-bound V&V and regression, and a single release rendezvous per successful turn. The reviewed HELIX workflow does not state this exact mapping. |
+| [Boehm and SEI: Spiral Development](https://resources.sei.cmu.edu/asset_files/specialreport/2000_003_001_13655.pdf) | Risk-driven, cyclic, concurrent engineering; importantly, Boehm explicitly rejects a sequence of miniature waterfalls and describes anchor points. | AV² applies a particular dual-strand arrangement to small, continuously governed software releases, with affected-revision evidence and live telemetry. It does not invent cyclic or concurrent engineering. |
+| [NASA: Independent Verification and Validation](https://swehb.nasa.gov/spaces/SWEHBVD/pages/102695499/SWE-141%2B-%2BSoftware%2BIndependent%2BVerification%2Band%2BValidation) | Independent, risk-informed assurance starts early and covers requirements through operations; feedback routes back to delivery. | AV² proposes applying comparable independence to machine-readable change units, event-by-event evidence and rapid release admission. This is not a claim that AV² satisfies NASA assurance requirements. |
+| [Microsoft: continuous delivery](https://learn.microsoft.com/en-us/devops/deliver/what-is-continuous-delivery) and [Holmström Olsson and Bosch: from agile to continuous deployment](https://research.chalmers.se/publication/212809) | Frequent incremental release, staged exposure, monitoring and learning from live usage are established. | AV² packages those practices with a QA-owned proposal challenge and a shared evidence decision on each release. It does not invent CI/CD, canaries or continuous learning. |
+
+## What is worth publishing and testing
+
+Publish **AV²** as a named synthesis and an open RFC, not as the first double helix or the discovery of a new testing discipline. The proposal to debate is precise: **two co-starting strands, independent QA from proposal through each delta, five recurring exchanges per turn, and one revision-bound release rendezvous followed by overlapping monitoring.**
+
+The illustrative demos establish what the model means. They do not establish higher release throughput or lower defect escape. Test those claims against a baseline such as standard CI/CD plus independent review, reporting false holds, seeded false greens, evidence freshness, time to decision and operating cost. Welcome concrete counterexamples and citations to earlier implementations of the same combination.

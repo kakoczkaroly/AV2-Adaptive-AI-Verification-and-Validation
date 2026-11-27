@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AV² · Continuous release stream</title>
+<style>
+:root{color:#17283b;background:#f4f7f9;font:16px system-ui;--blue:#245587;--teal:#087c70}body{margin:0}main{max-width:1000px;margin:auto;padding:clamp(16px,5vw,55px)}h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1;margin:.25em 0}p{line-height:1.5}.label{font-size:.78rem;font-weight:750;text-transform:uppercase;letter-spacing:.09em;color:#486479}.controls{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}button,select{background:white;border:1px solid #829aad;border-radius:6px;padding:.5rem;color:inherit;font:inherit}.frame{border:1px solid #b9cbd7;border-radius:8px;background:#fff;padding:14px;margin:12px 0}.trace{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;list-style:none;padding:0}.trace li{background:#eef3f8;padding:6px;border-radius:4px;font-size:.84rem}.trace li.current{background:#e0f2ed;outline:2px solid #087c70;font-weight:750}.round header{display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px}.round[data-state=HOLD]{border-left:5px solid #a75b32}.round[data-state=LIVE],.round[data-state=MONITORING]{border-left:5px solid #087c70}.strands{width:100%;height:40px;display:block}small{color:#486479}
+</style>
+<main><div class="label">AV² / v0.4 / deterministic simulation</div>
+<h1>One turn, one release round</h1><p>Each turn carries a different change through the same five exchanges. The next turn can start while earlier releases are still being monitored.</p>
+<div class="controls"><label>Example <select id="scenario"><option value="nominal">Continuous releases</option><option value="hold">Hold round 02</option></select></label><button id="pause">Pause</button><button id="step">Single step</button><button id="reset">Reset</button></div>
+<div class="frame" id="summary"></div><div id="rounds"></div>
+<p><small>Simulated live events; no real deployment. The last eight rounds stay in view. New turns keep appearing without restarting the entire stream. In the hold example, round 02 never releases and does not block an independent round.</small></p></main>
+<script id="model">
+const changes=["Retry handling","Metric event","Form access","Slow-network UX","Alert tuning","Queue limits","Form hint","Timeout recovery","Notification copy"];
+const labels=["Challenge","Verify + validate","Send finding","Retest + regress","Release + observe"];
+const exchanges=[
+ ["Propose change","Check the business goal, in-flight conflicts and policy."],
+ ["Send scoped change","Verify the contract and validate the intended behaviour."],
+ ["Receive finding","Route independent evidence back to the exact revision."],
+ ["Send revised candidate","Rerun the defect check and impacted regression checks."],
+ ["Release within authority","Monitor this release while other turns begin."]
+];
+function roundAt(id,t,scenario){
+ const start=(id-1)*4, age=t-start;
+ if(age<0)return null;
+ const held=scenario==="hold"&&id===2;
+ const released=!held&&age>=4;
+ const preceding=id-1;
+ const baseline=preceding===0?'Initial live baseline':('Release '+String(scenario==="hold"&&preceding===2?1:preceding).padStart(2,'0'));
+ return {id,start,age,baseline,change:changes[(id-1)%changes.length],step:held?Math.min(age,3):Math.min(age,4),released,releaseTick:released?start+4:null,
+ state:held&&age>=3?"HOLD":age===4?"LIVE":age>4?"MONITORING":"IN PROGRESS"};
+}
+function snapshot(t,scenario){
+ const latest=Math.floor(t/4)+1;
+ const rounds=Array.from({length:Math.min(8,latest)},(_,i)=>roundAt(Math.max(1,latest-7)+i,t,scenario));
+ const total=Math.max(0,Math.floor((t-4)/4)+1)-(scenario==="hold"&&t>=8?1:0);
+ return {latest,rounds,total};
+}
+</script>
+<script>
+const $=id=>document.getElementById(id);let t=0,paused=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function esc(s){return String(s).replace(/[&<>"]/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[x]));}
+function helix(step,state){
+ const p=(i,j)=>[8+j*20,20+13*Math.sin(j*Math.PI/10+i*Math.PI+.44*Math.PI)];
+ const curves=[0,1].map(i=>Array.from({length:21},(_,j)=>p(i,j).join(',')).join(' '));
+ const j=state==="LIVE"?15.6:[1.8,4,8,12.2,17.6][step],a=p(0,j),b=p(1,j);
+ return '<svg class="strands" viewBox="0 0 420 40" aria-hidden="true"><polyline points="'+curves[0]+'" fill="none" stroke="#245587" stroke-width="2.7"/><polyline points="'+curves[1]+'" fill="none" stroke="#087c70" stroke-width="2.7"/><line x1="'+a[0]+'" x2="'+b[0]+'" y1="'+a[1]+'" y2="'+b[1]+'" stroke="#9d4d27" stroke-width="3"/>'+(state==='LIVE'?'<circle cx="'+a[0]+'" cy="20" r="6" fill="white" stroke="#9d4d27" stroke-width="2"/><circle cx="'+a[0]+'" cy="20" r="2.8" fill="#9d4d27"/>':'<circle cx="'+a[0]+'" cy="'+a[1]+'" r="4" fill="#245587" stroke="white"/><circle cx="'+b[0]+'" cy="'+b[1]+'" r="4" fill="#087c70" stroke="white"/>')+'</svg>';
+}
+function render(){
+ const {rounds,total,latest}=snapshot(t,$('scenario').value);
+ $('summary').textContent='Simulated releases: '+total+' · Latest turn: '+String(latest).padStart(2,'0')+' · Tick: '+t;
+ $('pause').textContent=paused?'Resume':'Pause';
+ $('rounds').innerHTML=rounds.slice().reverse().map(r=>{
+  const timing=r.released?' · release at tick '+r.releaseTick:'';
+  const [delivery,qa]=exchanges[r.step];
+  const msg=r.state==="HOLD"?'Required regression evidence failed. No user exposure. Other units continue.':r.state==='LIVE'?'Both markers meet: candidate and independent evidence admit the same release.':delivery+' → '+qa;
+  return '<article class="frame round" data-state="'+r.state+'"><header><strong>Turn '+String(r.id).padStart(2,'0')+' · '+esc(r.change)+'</strong><span>'+r.state+timing+'</span></header>'+'<small>Starting point: '+esc(r.baseline)+'</small>'+helix(r.step,r.state)+'<ol class="trace">'+labels.map((s,i)=>'<li class="'+(i===r.step?'current':'')+'">'+(i+1)+'. '+s+'</li>').join('')+'</ol><p>'+esc(msg)+'</p></article>';
+ }).join('');
+}
+$('pause').onclick=()=>{paused=!paused;render()};$('step').onclick=()=>{paused=true;t++;render()};$('reset').onclick=()=>{t=0;render()};$('scenario').onchange=$('reset').onclick;
+render();setInterval(()=>{if(!paused){t++;render()}},1050);
+</script></html>
