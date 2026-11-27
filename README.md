@@ -20,3 +20,15 @@ Keep conventional tests. Add AI-specific evaluations where a generative componen
 [Join the first discussion: what evidence should block an AI-assisted release?](../../discussions/1)
 
 Background: [ISTQB CTFL](https://istqb.org/wp-content/uploads/2024/11/ISTQB_CTFL_Syllabus_v4.0.1.pdf) · [NIST Generative AI Profile](https://doi.org/10.6028/NIST.AI.600-1) · [Google SRE: Canarying Releases](https://sre.google/workbook/canarying-releases/).
+
+## Implementation and architecture
+
+- [Implementation plan](IMPLEMENTATION-PLAN.md): problem, six lifecycle checkpoints, deliverables and pilot milestones.
+- [Agent architecture](ARCHITECTURE.md): roles, independence, QA checks and release authority.
+- [Static workflow diagram](AV2-v0.1-delivery-and-assurance.png).
+
+## Watch the loop
+
+![Animated AV² loop: intake, spec, build, independent assurance, human mandate, canary, monitor, and new intake](av2-loop.gif)
+
+For pause, single stepping and failure scenarios, [download the interactive HTML demo](av2-loop.html) using GitHub’s Download raw file button and open it locally. The monitoring event triggers the next simulated intake automatically. It never grants approval to release a new artifact.
