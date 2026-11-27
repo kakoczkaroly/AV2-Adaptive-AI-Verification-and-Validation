@@ -23,7 +23,7 @@ A business proposal from a human or AI is a hypothesis. Independent QA can stop 
 
 **Verification** checks the artifact against requirements, contracts or rules. **Validation** checks fitness for the intended use. Before code, that means validating the *hypothesis or specification* against examples and observed needs, not claiming the product already works. After deployment, actual outcome validation needs appropriate data, often a control group and a longer observation window.
 
-- [Adoption guide for existing teams](ADOPTION-GUIDE.md) · [Magyar összefoglaló](ADOPTION-GUIDE.hu.md)
+- [Adoption guide for existing teams](ADOPTION-GUIDE.md)
 - [Implementation plan and detailed V&V matrix](IMPLEMENTATION-PLAN.md)
 - [Event-driven agent and QA architecture](ARCHITECTURE.md)
 - [Machine-readable worked example](examples/change-unit.json)

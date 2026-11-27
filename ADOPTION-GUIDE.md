@@ -6,8 +6,6 @@
 
 ![Five adoption steps above two overlapping AV² release rounds](av2-adoption-roadmap.svg)
 
-[Magyar összefoglaló és ábra](ADOPTION-GUIDE.hu.md)
-
 ## 1. Pick a pilot and record the baseline
 
 **Owner:** QA lead with the product and operations owners. Choose a journey that changes often enough to observe multiple real rounds, with safe test data, a measurable signal, a stable test environment and a way to disable the change. Avoid payment, irreversible migrations and sensitive data in the first pilot. Record the currently deployed version, how the team releases today, when QA first sees changes, which checks regularly fail or flake, and the last few relevant defects.
