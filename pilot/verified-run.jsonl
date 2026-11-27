@@ -1,0 +1,26 @@
+{"n":1,"type":"turn.started","id":"CU-01","baseline":"4b053abe18e6f8df3336edf01e0b240acc3d7d163c004c1cb5af191e961f0ea0","signal":{"text":"One valid request retried using the same ID counts twice. Preserve distinct valid requests.","probe":"duplicate","expected":1,"observed":2}}
+{"n":2,"type":"qa.started","id":"CU-01"}
+{"n":3,"type":"delivery.started","id":"CU-01"}
+{"n":4,"type":"qa.proposed","id":"CU-01","attempt":1,"model":"qwen2.5-1.5b-q4-k-m","probe":"cross-account"}
+{"n":5,"type":"qa.suite.qualified","id":"CU-01","probe":"cross-account","suiteDigest":"3205bfad7130f6309add6a3f817467b13e76622f540385562b22ac563a6d6e7f","retained":true,"catchesTarget":true,"baselinePass":true}
+{"n":6,"type":"delivery.candidate","id":"CU-01","attempt":1,"build":"collapse-all","digest":"2f0a90b6e09f480b2285c29fd8580c3272acb4875d7990ea7075914d632d7c48","model":null,"controlledFault":true}
+{"n":7,"type":"qa.receipt","id":"CU-01","attempt":1,"artifact":"2f0a90b6e09f480b2285c29fd8580c3272acb4875d7990ea7075914d632d7c48","suite":"3205bfad7130f6309add6a3f817467b13e76622f540385562b22ac563a6d6e7f","decision":"HOLD","reason":"REQUIRED_CHECK_NOT_PASSED","checks":[{"id":"duplicate","expected":1,"observed":1,"status":"PASS"},{"id":"distinct","expected":2,"observed":2,"status":"PASS"},{"id":"cross-account","expected":2,"observed":1,"status":"FAIL"}],"deployAuthorised":false}
+{"n":8,"type":"hold","id":"CU-01","attempt":1,"reason":"REQUIRED_CHECK_NOT_PASSED"}
+{"n":9,"type":"delivery.candidate","id":"CU-01","attempt":2,"build":"account-dedup","digest":"2dbff79e2dcfd4f01868744a419e97d322e74e81813dc805649155916297d536","model":"qwen2.5-1.5b-q4-k-m","controlledFault":false}
+{"n":10,"type":"qa.receipt","id":"CU-01","attempt":2,"artifact":"2dbff79e2dcfd4f01868744a419e97d322e74e81813dc805649155916297d536","suite":"3205bfad7130f6309add6a3f817467b13e76622f540385562b22ac563a6d6e7f","decision":"ELIGIBLE","candidate":"CU-01/attempt-2","contract":"quote-counting@1","reportDigest":"b3e4b439c6bc33449a0780b70e4382c0bd3c73831d0ec87a81116ddddeb116eb","checks":[{"id":"duplicate","expected":1,"observed":1,"status":"PASS"},{"id":"distinct","expected":2,"observed":2,"status":"PASS"},{"id":"cross-account","expected":2,"observed":2,"status":"PASS"}],"deployAuthorised":false}
+{"n":11,"type":"converged","id":"CU-01","attempt":2,"artifact":"2dbff79e2dcfd4f01868744a419e97d322e74e81813dc805649155916297d536","releaseTarget":"loopback-staging"}
+{"n":12,"type":"release.staging","id":"CU-01","artifact":"2dbff79e2dcfd4f01868744a419e97d322e74e81813dc805649155916297d536","checks":3}
+{"n":13,"type":"monitor.observed","id":"CU-01","probe":"invalid","digest":"2dbff79e2dcfd4f01868744a419e97d322e74e81813dc805649155916297d536","observed":1,"expected":0}
+{"n":14,"type":"monitor.opens.turn","id":"CU-01","next":"CU-02","probe":"invalid"}
+{"n":15,"type":"turn.started","id":"CU-02","baseline":"2dbff79e2dcfd4f01868744a419e97d322e74e81813dc805649155916297d536","signal":{"text":"Staging probe: an invalid request is counted as a valid quote.","probe":"invalid","digest":"2dbff79e2dcfd4f01868744a419e97d322e74e81813dc805649155916297d536","observed":1,"expected":0}}
+{"n":16,"type":"qa.started","id":"CU-02"}
+{"n":17,"type":"delivery.started","id":"CU-02"}
+{"n":18,"type":"monitor.concurrent","id":"CU-02","probe":"duplicate","digest":"2dbff79e2dcfd4f01868744a419e97d322e74e81813dc805649155916297d536","observed":1,"expected":1}
+{"n":19,"type":"qa.proposed","id":"CU-02","attempt":1,"model":"qwen2.5-1.5b-q4-k-m","probe":"invalid"}
+{"n":20,"type":"qa.suite.qualified","id":"CU-02","probe":"invalid","suiteDigest":"bbdcbcaef0298c1c5140e3f765e7daded91568774e6e13ed19171901d3ce4655","retained":true,"catchesTarget":true,"baselinePass":true}
+{"n":21,"type":"delivery.candidate","id":"CU-02","attempt":1,"build":"valid-account-dedup","digest":"7a9451afbd9891fc008bdc54fdffed4fe8130a72e5fab13f7cc6fc432026ce15","model":"qwen2.5-1.5b-q4-k-m","controlledFault":false}
+{"n":22,"type":"qa.receipt","id":"CU-02","attempt":1,"artifact":"7a9451afbd9891fc008bdc54fdffed4fe8130a72e5fab13f7cc6fc432026ce15","suite":"bbdcbcaef0298c1c5140e3f765e7daded91568774e6e13ed19171901d3ce4655","decision":"ELIGIBLE","candidate":"CU-02/attempt-1","contract":"quote-counting@1","reportDigest":"c7603a87249a20019bc0fd336839a3246a0897b8d86927550bb6408d380946be","checks":[{"id":"duplicate","expected":1,"observed":1,"status":"PASS"},{"id":"distinct","expected":2,"observed":2,"status":"PASS"},{"id":"cross-account","expected":2,"observed":2,"status":"PASS"},{"id":"invalid","expected":0,"observed":0,"status":"PASS"}],"deployAuthorised":false}
+{"n":23,"type":"converged","id":"CU-02","attempt":1,"artifact":"7a9451afbd9891fc008bdc54fdffed4fe8130a72e5fab13f7cc6fc432026ce15","releaseTarget":"loopback-staging"}
+{"n":24,"type":"release.staging","id":"CU-02","artifact":"7a9451afbd9891fc008bdc54fdffed4fe8130a72e5fab13f7cc6fc432026ce15","checks":4}
+{"n":25,"type":"monitor.observed","id":"CU-02","probe":"invalid","digest":"7a9451afbd9891fc008bdc54fdffed4fe8130a72e5fab13f7cc6fc432026ce15","observed":0,"expected":0}
+{"type":"summary","releaseCount":2,"productionDeployments":0}
