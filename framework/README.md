@@ -24,3 +24,7 @@ node framework/cli.mjs av2-policy.json av2-packet.json
 - Exit codes: 0 eligible, 2 hold, 1 invalid CLI usage, unreadable file or invalid JSON. A decision never grants deploy authority. The JSON receipt says why a candidate was held and includes check results when available.
 
 A matching `source` string is not authentication. For this local prototype, run both jobs under a trusted workflow and never feed it attacker-controlled policy, packets or unpublished customer data. Review the [integration and permission boundary](../docs/INTEGRATIONS.md) before adapting it. This output is not a certification or measurement of efficacy in production.
+
+## CDEvents experiment
+
+Run `node examples/cdevents-assurance.mjs` for a test-run event with matching, stale and missing evidence. See the [interop notes](../docs/CDEVENTS-EXPERIMENT.md). This is a local experimental adapter, not a live connector.

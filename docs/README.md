@@ -7,3 +7,5 @@
 - [Implementation plan](IMPLEMENTATION-PLAN.md): the detailed verification and validation matrix.
 - [Proposal challenge](PROPOSAL-CHALLENGE.md): catch business, work-in-flight and policy conflicts before affected code.
 - [Related work](RELATED-WORK.md): precedents and what AV² proposes to combine.
+
+- [CDEvents experiment](CDEVENTS-EXPERIMENT.md): run an offline event-to-evidence example.
