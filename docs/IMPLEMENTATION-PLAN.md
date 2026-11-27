@@ -6,7 +6,7 @@ A turn is the unit of cadence, not one stage on a project timeline. Candidate A 
 
 ## Unit of change
 
-A **Change Unit** is the smallest independently checkable, traceable change; it should be separately reversible where practical. Its versioned contract gives agents the objective and provenance, in/out-of-scope components, machine-readable invariants, examples, dependencies, acceptance/evidence requirements and rollout constraints. If two changes cannot preserve the invariant independently, bundle them or use a compatibility contract. Human-readable stories may be generated as views; they are not the execution interface. See the [example](examples/change-unit.json). IDs and hashes in that file are illustrative.
+A **Change Unit** is the smallest independently checkable, traceable change; it should be separately reversible where practical. Its versioned contract gives agents the objective and provenance, in/out-of-scope components, machine-readable invariants, examples, dependencies, acceptance/evidence requirements and rollout constraints. If two changes cannot preserve the invariant independently, bundle them or use a compatibility contract. Human-readable stories may be generated as views; they are not the execution interface. See the [example](../examples/change-unit.json). IDs and hashes in that file are illustrative.
 
 ## Proposal challenge before affected implementation
 
@@ -44,3 +44,7 @@ Example: R1 counts A,A as 2 (fail). R2 returns 1 for all non-empty requests: it 
 2. In staging, instrument detection latency (delta to useful finding), false blocks, missed seeded defects, independent critical evidence coverage and checks per delta. Verify dependency invalidation and reproducible rerun.
 3. Compare observed latency and failure detection before choosing a cadence. Small static or focused checks can run on each meaningful delta; UI/system or qualitative checks can run asynchronously. High speed is a target and has not yet been measured.
 4. Start any production pilot only under explicit bounded release authority, with control and stop conditions. Use genuine user outcomes and record uncertainty; no automatic rewriting of the approval or QA policy.
+
+## Pilot a changing QA suite
+
+In shadow mode, compare approved and proposed QA on identical product versions and the same approved contract. Test both false greens and false holds. Retain prior critical regression checks, reject missing fixtures, and require a separate review before evidence from a proposed suite can count. Run the [offline scenario](../framework/README.md) before connecting any external tooling.

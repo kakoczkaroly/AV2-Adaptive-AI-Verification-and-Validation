@@ -1,7 +1,7 @@
 const fs=require('node:fs'), path=require('node:path'), vm=require('node:vm'), assert=require('node:assert/strict');
 const read=n=>fs.readFileSync(path.join(__dirname,'..',n),'utf8');
 const model=h=>h.match(/<script id="model">([\s\S]*?)<\/script>/)[1];
-const stream=read('av2-release-stream.html'), detail=read('av2-loop.html');
+const stream=read('demos/av2-release-stream.html'), detail=read('demos/av2-loop.html');
 vm.runInNewContext(model(stream)+`
 const s=snapshot(24,'nominal');assert.equal(s.total,6);
 const firstSix=s.rounds.filter(r=>r.id<=6);assert.equal(firstSix.length,6);
